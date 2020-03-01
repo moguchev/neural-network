@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Лабораторная работа №1</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="stylies.css">
+    </head>
+    <body>
+        <center>
+            <b><p>Лабораторная работа №1</p>
+            <p>Исследование однослойных нейронных сетей на примере моделирования булевых выражений</p></b>
+        </center>
+        <form class="user-form" name="data">
+            <fieldset>
+                <legend>Задание начальных данных</legend>
+                <p>
+                    <div class="row" id="function">
+                        <label class="row__name">Функция</label>
+                        <script>
+                            let func = document.getElementById("function");
+                            if (func) {
+                                for (let i = 0; i < 16; i++) {
+                                    let container = document.createElement("div");
+                                    container.classList.add("boolean-function");
+                                    container.innerHTML = `
+                                        <span class="index">${i}</span>
+                                        <input type="number" id="${i}" name="bit" min="0" max="1" step="1" value="0" required>`;
+
+                                    if (i % 4 == 0 && i != 0) {
+                                        container.classList.add("ml10");
+                                    }
+                                    func.appendChild(container);
+                                }
+                            }
+                        </script>
+                    </div>
+                </p>
+                <p>
+                    <div class="row">
+                        <label class="row__name">Норма обучения</label>
+                        <input type="number" name="learning-rate" min="0" max="1" step="0.001" value="0.3" required>
+                    </div>
+                </p>
+                <p>
+                    <div class="row">
+                        <label class="row__name">Функция активации</label>
+                    </div>
+                </p>
+                <p>
+                    <input type="radio" name="activation-function" value="1" checked>1<br>
+                    <input type="radio" name="activation-function" value="2">2<br>
+                    <input type="radio" name="activation-function" value="3">3<br>
+                    <input type="radio" name="activation-function" value="4">4
+                </p>
+                <input type="submit" value="Начать обучение">
+            </fieldset>
+        </form>
+        <div class="wrapper"></div>
+    </body>
+    <script defer src="main.js"></script>
+</html>

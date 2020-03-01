@@ -1,0 +1,25 @@
+.row {
+    display: flex;
+    flex-direction: row;
+}
+.row__name {
+    width: 150px;
+}
+
+.boolean-function {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 5px;
+}
+.function {
+    display: flex;
+    flex-direction: row;
+}
+.index {
+    font-size: 12px;
+    text-align: center;
+}
+.ml10 {
+    margin-left: 10px;
+}
