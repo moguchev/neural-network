@@ -23,3 +23,9 @@
 .ml10 {
     margin-left: 10px;
 }
+.wrapper {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    width: 100%;
+}

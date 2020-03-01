@@ -13,6 +13,7 @@ function handler(event) {
     event.preventDefault();
     let values = getValues();
     console.log(values);
+    initTable();
     startLearning(values.FUNCTION, values.LEARNING_RATE, values.ACTIVATION_FUNCTION);
 }
 
@@ -41,6 +42,57 @@ function getValues() {
     return { FUNCTION, LEARNING_RATE, ACTIVATION_FUNCTION };
 }
 
+function initTable() {
+    let wrapper = document.querySelector('.wrapper');
+    wrapper.innerHTML = '';
+
+    let table = document.createElement('table');
+    table.innerHTML = `
+    <caption><h3>Параметры НС на последовательных эпохах(пороговая ФА)</h3></caption>
+    <tr>
+        <th>Номер эпохи <i>k</i></th>
+        <th>Вектор весов <b>w</b></th>
+        <th>Выходной вектор <b>y</b></th>
+        <th>Сумарная ошибка <i>E</i></th>
+    </tr>`
+    table.setAttribute('border', '1px');
+    table.setAttribute('cellpadding', '0');
+    table.setAttribute('cellspacing', '0');
+    wrapper.appendChild(table);
+
+    wrapper.innerHTML += '<center><h4>График сумарной ошибки НС по эпохам обучения</h4></center><div id="myfirstchart" style="height: 450px;"></div>'
+}
+
+function appendToTable(k,w,y,E) {
+    let table = document.querySelector('table');
+
+    let tableRow = document.createElement('tr');
+    w.forEach((el, i)=>{ w[i] = (+el.toFixed(3)); });
+    tableRow.innerHTML = `<td><center>${k}</center></td><td><center>(${w})</center></td><td><center>(${y})</center></td><td><center>${E}</center></td>`;
+
+    table.appendChild(tableRow);
+}
+
+function plot(map) {
+    new Morris.Line({
+        // ID of the element in which to draw the chart.
+        element: 'myfirstchart',
+        // Chart data records -- each entry in this array corresponds to a point on
+        // the chart.
+        data: map,
+        // The name of the data record attribute that contains x-values.
+        xkey: 'k',
+        // A list of names of data record attributes that contain y-values.
+        ykeys: ['E'],
+        // Labels for the ykeys -- will be displayed when you hover over the
+        // chart.
+        labels: ['Суммарная ошибка'],
+
+        parseTime: false,
+        smooth: false,
+      });
+}
+
 // ____Logic_____
 /**
  * @param {Array} booleanFunc
@@ -48,6 +100,8 @@ function getValues() {
  * @param {Number} activationFunc
  */
 function startLearning(booleanFunc, lerningRate, activationFunc) {
+    let map = [];
+
     var totalError = 1;
     let numberOfVariables = Math.log2(booleanFunc.length);
     let weightVector = generateZeroWeightVector(numberOfVariables + 1);
@@ -60,11 +114,13 @@ function startLearning(booleanFunc, lerningRate, activationFunc) {
         totalError = 0;
         errorVector.forEach((elem) => { totalError += elem*elem;});
 
+        appendToTable(era, weightVector, yVector, totalError);
         console.log("Эра: ", era);
         console.log("Вектор весов: ", weightVector);
         console.log("Выходной вектор: ", yVector);
         console.log("Сумарная ошибка: ", totalError);
 
+        map.push({k: era, E: totalError});
         if (totalError != 0) {
             vectors = {
                 w: weightVector,
@@ -76,9 +132,15 @@ function startLearning(booleanFunc, lerningRate, activationFunc) {
             weightVector = correctWeight(vectors);
         }
     }
+    plot(map);
+
 }
 
-
+/**
+ * корректировка вектора весов согласно правилу Видроу-Хоффа (дельта-правило)
+ * @param {Object} v структура с векторами весов, net, нормой обучения, целевой функцией и ФА
+ * @returns {Array} Новый вектор весов
+ */
 function correctWeight(v) {
     let xVectors = generateXs(v.w.length);
     let count = Math.pow(2, v.w.length-1);
@@ -101,9 +163,9 @@ function correctWeight(v) {
 
 /**
  * Вычисление ошибки
- * @param {Array} t
- * @param {Array} y
- * @returns {Array}
+ * @param {Array} t целевой выход
+ * @param {Array} y реальный выход НС
+ * @returns {Array} Вектор ошибок
  */
 function calculateError(t,y) {
     let delta = new Array;
@@ -115,14 +177,13 @@ function calculateError(t,y) {
 
 /**
  * Вычисление вектора net
- * @param {Array} weightVector
- * @returns {Array}
+ * @param {Array} weightVector вектор весов W
+ * @returns {Array} вектор сетового входа net
  */
 function calculateNet(weightVector) {
     let xVectors = generateXs(weightVector.length);
-    console.log(xVectors);
-
     let count = Math.pow(2, weightVector.length-1);
+
     let netVector = new Array(count);
     for (let i = 0; i < count; i++) {
         let net = 0;
@@ -135,10 +196,10 @@ function calculateNet(weightVector) {
 }
 
 /**
- * Вычисление выходного вектора
- * @param {Array} netVector
- * @param {Number} activationFunc
- * @returns {Array}
+ * Вычисление выходного вектора Y
+ * @param {Array} netVector вектор сетового входа net
+ * @param {Number} activationFunc функция активации
+ * @returns {Array} реальный выход НС
  */
 function calculateY(netVector, activationFunc) {
     let yVector = new Array(netVector.length);
@@ -150,11 +211,48 @@ function calculateY(netVector, activationFunc) {
     return yVector;
 }
 
+
 /**
- * функция активации
- * @param {Number} activationFunc
- * @param {Number} net
- * @returns {Number}
+ * Генерация векторов переменных Х (Х0-еденичный)
+ * @param {Number} size размер вектора(количество переменных)
+ * @returns {Array} вектор X = (x0, x1, ...)
+ */
+function generateXs(size) {
+    Xs = new Array(size);
+    length = Math.pow(2,(size-1));
+
+    for (i = 0; i < size; i++) {
+        let x = new Array(length);
+        if (i == 0) { 
+            x.fill(1, 0, length);
+        } else {
+            x.fill(0, 0, length);
+            let step = Math.pow(2,(size-i-1));
+            for (let j = step; j < length; j += 2*step) {
+                x.fill(1, j, j+step);
+            }
+        }
+        Xs[i] = x;
+    }
+    return Xs;
+}
+
+/**
+ * генерация нулевого вектора весов
+ * @param {Number} size размер вектора
+ * @returns {Array} вектор W = (w0, w1, ...)
+ */
+function generateZeroWeightVector(size) {
+    let vector = new Array(size);
+    vector.fill(0, 0, size);
+    return vector;
+}
+
+/**
+ * производная функция активации
+ * @param {Number} activationFunc тип функции активации
+ * @param {Number} net вектор сетового входа
+ * @returns {Number} значение производной ФА(net)
  */
 function df(activationFunc, net) {
     switch(activationFunc) {
@@ -170,11 +268,12 @@ function df(activationFunc, net) {
             return 1;
     }
 }
+
 /**
  * функция активации
- * @param {Number} activationFunc
- * @param {Number} net
- * @returns {Number}
+ * @param {Number} activationFunc тип функции активации
+ * @param {Number} net вектор сетового входа
+ * @returns {Number} значение ФА(net)
  */
 function f(activationFunc, net) {
     switch(activationFunc) {
@@ -208,39 +307,4 @@ function fa3(net) {
 
 function fa4(net) {
     return 0.5(Math.tanh(net)+1);
-}
-/**
- * генерация векторов переменных Х (Х0-еденичный)
- * @param {Number} size
- * @returns {Array}
- */
-function generateXs(size) {
-    Xs = new Array(size);
-    length = Math.pow(2,(size-1));
-
-    for (i = 0; i < size; i++) {
-        let x = new Array(length);
-        if (i == 0) { 
-            x.fill(1, 0, length);
-        } else {
-            x.fill(0, 0, length);
-            let step = Math.pow(2,(size-i-1));
-            for (let j = step; j < length; j += 2*step) {
-                x.fill(1, j, j+step);
-            }
-        }
-        Xs[i] = x;
-    }
-    return Xs;
-}
-
-/**
- * генерация нулевого вектора весов
- * @param {Number} size
- * @returns {Array}
- */
-function generateZeroWeightVector(size) {
-    let vector = new Array(size);
-    vector.fill(0, 0, size);
-    return vector;
 }
