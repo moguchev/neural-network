@@ -107,6 +107,8 @@ function startLearning(booleanFunc, lerningRate, activationFunc) {
     let weightVector = generateZeroWeightVector(numberOfVariables + 1);
 
     for(let era = 0; totalError != 0; era++) {
+        if (era == 100) break; // если цикл бесконечный
+
         let netVector = calculateNet(weightVector);
         let yVector = calculateY(netVector, activationFunc);
         let errorVector = calculateError(booleanFunc, yVector);
@@ -133,7 +135,6 @@ function startLearning(booleanFunc, lerningRate, activationFunc) {
         }
     }
     plot(map);
-
 }
 
 /**
@@ -156,7 +157,7 @@ function correctWeight(v) {
         for (let j = 0; j < v.w.length; j++) {
             v.w[j] += xVectors[j][i] * delta * v.n * df(v.af, net);
         };
-        console.log(i, v.w);
+        // console.log(i, v.w);
     }
     return v.w;
 }
@@ -246,65 +247,4 @@ function generateZeroWeightVector(size) {
     let vector = new Array(size);
     vector.fill(0, 0, size);
     return vector;
-}
-
-/**
- * производная функция активации
- * @param {Number} activationFunc тип функции активации
- * @param {Number} net вектор сетового входа
- * @returns {Number} значение производной ФА(net)
- */
-function df(activationFunc, net) {
-    switch(activationFunc) {
-        case 1:
-            return 1;
-        case 2:
-            return 1; // TODO
-        case 3:
-            return fa3(net)*(1 - fa3(net));
-        case 4:
-            return 1; // TODO
-        default:
-            return 1;
-    }
-}
-
-/**
- * функция активации
- * @param {Number} activationFunc тип функции активации
- * @param {Number} net вектор сетового входа
- * @returns {Number} значение ФА(net)
- */
-function f(activationFunc, net) {
-    switch(activationFunc) {
-        case 1:
-            return fa1(net);
-        case 2:
-            return fa2(net);
-        case 3:
-            return fa3(net);
-        case 4:
-            return fa4(net);
-        default:
-            return fa1(net);
-    }
-}
-
-function fa1(net) {
-    if (net >= 0){
-        return 1;
-    }
-    return 0;
-}
-
-function fa2(net) {
-    return 0.5*(net/(1+Math.abs(net))+1);
-}
-
-function fa3(net) {
-    return 1/(1+Math.exp(-net));
-}
-
-function fa4(net) {
-    return 0.5(Math.tanh(net)+1);
 }
