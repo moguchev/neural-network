@@ -15,6 +15,7 @@ function handler(event) {
     console.log(values);
     initTable();
     startLearning(values.FUNCTION, values.LEARNING_RATE, values.ACTIVATION_FUNCTION);
+    findMinimalXsAmount(values.FUNCTION, values.LEARNING_RATE, values.ACTIVATION_FUNCTION);
 }
 
 // ____UI_____
@@ -94,6 +95,85 @@ function plot(map) {
 }
 
 // ____Logic_____
+
+function findMinimalXsAmount(booleanFunc, lerningRate, activationFunc) {
+    let input = {
+        t : booleanFunc,
+        n : lerningRate,
+        fa : activationFunc,
+    };
+
+    let result = {
+        found: false,
+        set: [],
+        w: [],
+        k: 0,
+    };
+
+
+    for (let i = 1; i < booleanFunc.length; i++) {
+        let combinations = getAllCombinations(booleanFunc.length, i);
+        for (let j = 0; j < combinations.length; j++) {
+            partialTraining(combinations[j], input, result);
+            if (result.found) {  
+                break;
+            }
+            console.log("Not FOUND:(")
+        }
+        if (result.found) {
+            console.log("FOUND!")
+            //...
+            break;
+        }
+    }
+}
+
+function partialTraining(combination, input, result) {
+    var totalError = 1;
+    let numberOfVariables = Math.log2(input.t.length);
+    let weightVector = generateZeroWeightVector(numberOfVariables + 1);
+
+    for(let era = 0; totalError != 0; era++) {
+        if (era == 100) break; // если цикл бесконечный
+
+        let netVector = calculateNet(weightVector);
+        let yVector = calculateY(netVector, input.fa);
+        let errorVector = calculateError(input.t, yVector);
+
+        totalError = 0;
+        errorVector.forEach((elem) => { totalError += elem*elem; });
+
+        if (totalError != 0) {
+            weightVector = correctWeightOnSet(weightVector, combination, input);
+        } else {
+            result.found = true;
+            result.k = era;
+            result.w = weightVector;
+            result.set = combination;
+            return;
+        }
+    }
+}
+
+function correctWeightOnSet(w, combination, input) {
+    let xVectors = generateXs(w.length);
+    
+    combination.forEach((index) => {
+        let net = 0;
+        for (let j = 0; j < w.length; j++) {
+            net += xVectors[j][index] * w[j]
+        };
+        
+        let delta = input.t[index] - f(input.fa, net);
+
+        for (let j = 0; j < w.length; j++) {
+            w[j] += xVectors[j][index] * delta * input.n * df(input.fa, net);
+        };
+    });
+
+    return w;
+}
+
 /**
  * @param {Array} booleanFunc
  * @param {Number} lerningRate
@@ -117,12 +197,8 @@ function startLearning(booleanFunc, lerningRate, activationFunc) {
         errorVector.forEach((elem) => { totalError += elem*elem;});
 
         appendToTable(era, weightVector, yVector, totalError);
-        console.log("Эра: ", era);
-        console.log("Вектор весов: ", weightVector);
-        console.log("Выходной вектор: ", yVector);
-        console.log("Сумарная ошибка: ", totalError);
-
         map.push({k: era, E: totalError});
+
         if (totalError != 0) {
             vectors = {
                 w: weightVector,
@@ -157,7 +233,6 @@ function correctWeight(v) {
         for (let j = 0; j < v.w.length; j++) {
             v.w[j] += xVectors[j][i] * delta * v.n * df(v.af, net);
         };
-        // console.log(i, v.w);
     }
     return v.w;
 }
@@ -247,4 +322,47 @@ function generateZeroWeightVector(size) {
     let vector = new Array(size);
     vector.fill(0, 0, size);
     return vector;
+}
+
+/**
+ * все сочетания наборов без повторений С из n по k
+ * @param {Number} n
+ * @param {Number} n
+ * @returns {Array}
+ */
+function getAllCombinations(n, k) {
+    let combinations = [];
+    if (k > n) {
+        return combinations;
+    }
+
+    let set = { sample : [] };
+    for (let i = 0; i < k; i++) {
+        set.sample.push(i);
+    }
+
+    combinations.push(set.sample.slice());
+    while (nextCombination(set, n)) {
+        combinations.push(set.sample.slice());
+    }
+    return combinations;
+}
+/**
+ * генерация следующей выборки
+ * @param {Object} set
+ * @param {Number} n
+ * @returns {Boolean}
+ */
+function nextCombination(set, n) {
+    let k = set.sample.length;
+    for (let i = k - 1; i >= 0; --i) {
+        if (set.sample[i] < n-k+i) {
+            ++set.sample[i];
+            for (let j = i + 1; j < k; ++j) {
+                set.sample[j] = set.sample[j-1]+1;
+            }
+            return true;
+        }
+    }
+    return false;
 }
