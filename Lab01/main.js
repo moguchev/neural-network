@@ -13,12 +13,18 @@ function handler(event) {
     event.preventDefault();
     let values = getValues();
     console.log(values);
-    initTable();
+
+    let wrapper = document.querySelector('.wrapper');
+    initTable(wrapper);
+    wrapper.innerHTML += '<center><h4>График сумарной ошибки НС по эпохам обучения</h4></center><div id="myfirstchart" style="height: 450px;"></div>'
     startLearning(values.FUNCTION, values.LEARNING_RATE, values.ACTIVATION_FUNCTION);
+
+    let pt = document.querySelector('.partial-training');
+    initTable(pt);
+    pt.innerHTML += '<center><h4>Минимальный набор</h4></center><div id="sets"></div>'
     findMinimalXsAmount(values.FUNCTION, values.LEARNING_RATE, values.ACTIVATION_FUNCTION);
 }
 
-// ____UI_____
 /**
  * Получение булевой функции, функци активации и нормы обучения от пользователя
  * @returns {Object}
@@ -43,13 +49,13 @@ function getValues() {
     return { FUNCTION, LEARNING_RATE, ACTIVATION_FUNCTION };
 }
 
-function initTable() {
-    let wrapper = document.querySelector('.wrapper');
-    wrapper.innerHTML = '';
+function initTable(to) {
+    if (!to) { return; }
 
+    to.innerHTML = '';
     let table = document.createElement('table');
     table.innerHTML = `
-    <caption><h3>Параметры НС на последовательных эпохах(пороговая ФА)</h3></caption>
+    <caption><h3>Параметры НС на последовательных эпохах</h3></caption>
     <tr>
         <th>Номер эпохи <i>k</i></th>
         <th>Вектор весов <b>w</b></th>
@@ -59,9 +65,7 @@ function initTable() {
     table.setAttribute('border', '1px');
     table.setAttribute('cellpadding', '0');
     table.setAttribute('cellspacing', '0');
-    wrapper.appendChild(table);
-
-    wrapper.innerHTML += '<center><h4>График сумарной ошибки НС по эпохам обучения</h4></center><div id="myfirstchart" style="height: 450px;"></div>'
+    to.appendChild(table);
 }
 
 function appendToTable(k,w,y,E) {
@@ -94,85 +98,28 @@ function plot(map) {
       });
 }
 
-// ____Logic_____
+function printResults(result) {
+    let table = document.querySelectorAll('table')[1];
 
-function findMinimalXsAmount(booleanFunc, lerningRate, activationFunc) {
-    let input = {
-        t : booleanFunc,
-        n : lerningRate,
-        fa : activationFunc,
-    };
-
-    let result = {
-        found: false,
-        set: [],
-        w: [],
-        k: 0,
-    };
-
-
-    for (let i = 1; i < booleanFunc.length; i++) {
-        let combinations = getAllCombinations(booleanFunc.length, i);
-        for (let j = 0; j < combinations.length; j++) {
-            partialTraining(combinations[j], input, result);
-            if (result.found) {  
-                break;
-            }
-            console.log("Not FOUND:(")
-        }
-        if (result.found) {
-            console.log("FOUND!")
-            //...
-            break;
-        }
-    }
-}
-
-function partialTraining(combination, input, result) {
-    var totalError = 1;
-    let numberOfVariables = Math.log2(input.t.length);
-    let weightVector = generateZeroWeightVector(numberOfVariables + 1);
-
-    for(let era = 0; totalError != 0; era++) {
-        if (era == 100) break; // если цикл бесконечный
-
-        let netVector = calculateNet(weightVector);
-        let yVector = calculateY(netVector, input.fa);
-        let errorVector = calculateError(input.t, yVector);
-
-        totalError = 0;
-        errorVector.forEach((elem) => { totalError += elem*elem; });
-
-        if (totalError != 0) {
-            weightVector = correctWeightOnSet(weightVector, combination, input);
-        } else {
-            result.found = true;
-            result.k = era;
-            result.w = weightVector;
-            result.set = combination;
-            return;
-        }
-    }
-}
-
-function correctWeightOnSet(w, combination, input) {
-    let xVectors = generateXs(w.length);
+    result.table.forEach(row => {
+        let tableRow = document.createElement('tr');
+        row.w.forEach((el, i)=>{ row.w[i] = (+el.toFixed(3)); });
+        tableRow.innerHTML = `<td><center>${row.k}</center></td><td><center>(${row.w})</center></td><td><center>(${row.y})</center></td><td><center>${row.E}</center></td>`;
     
-    combination.forEach((index) => {
-        let net = 0;
-        for (let j = 0; j < w.length; j++) {
-            net += xVectors[j][index] * w[j]
-        };
-        
-        let delta = input.t[index] - f(input.fa, net);
-
-        for (let j = 0; j < w.length; j++) {
-            w[j] += xVectors[j][index] * delta * input.n * df(input.fa, net);
-        };
+        table.appendChild(tableRow);
     });
 
-    return w;
+    let sets = document.getElementById("sets");
+
+    result.sets.forEach((set, i) => {
+        let s = document.createElement('div');
+        set.shift();
+        s.innerHTML = `<center>x <sup><small>(${i})</small></sup> = ${set}</center>`;
+        sets.appendChild(s);
+    })
 }
+
+// ____Logic_____
 
 /**
  * @param {Array} booleanFunc
@@ -324,45 +271,92 @@ function generateZeroWeightVector(size) {
     return vector;
 }
 
-/**
- * все сочетания наборов без повторений С из n по k
- * @param {Number} n
- * @param {Number} n
- * @returns {Array}
- */
-function getAllCombinations(n, k) {
-    let combinations = [];
-    if (k > n) {
-        return combinations;
-    }
+function findMinimalXsAmount(booleanFunc, lerningRate, activationFunc) {
+    let input = {
+        t : booleanFunc,
+        n : lerningRate,
+        fa : activationFunc,
+    };
 
-    let set = { sample : [] };
-    for (let i = 0; i < k; i++) {
-        set.sample.push(i);
-    }
+    let result = {
+        found: false,
+        table: [],
+    };
 
-    combinations.push(set.sample.slice());
-    while (nextCombination(set, n)) {
-        combinations.push(set.sample.slice());
-    }
-    return combinations;
-}
-/**
- * генерация следующей выборки
- * @param {Object} set
- * @param {Number} n
- * @returns {Boolean}
- */
-function nextCombination(set, n) {
-    let k = set.sample.length;
-    for (let i = k - 1; i >= 0; --i) {
-        if (set.sample[i] < n-k+i) {
-            ++set.sample[i];
-            for (let j = i + 1; j < k; ++j) {
-                set.sample[j] = set.sample[j-1]+1;
+    for (let i = 1; i < booleanFunc.length; i++) {
+        let combinations = getAllCombinations(booleanFunc.length, i);
+        for (let j = 0; j < combinations.length; j++) {
+            partialTraining(combinations[j], input, result);
+            if (result.found) {  
+                break;
             }
-            return true;
+            console.log("Not FOUND:(")
+        }
+        if (result.found) {
+            console.log("FOUND!")
+            console.log(result.table);
+            console.log(result.sets);
+            printResults(result);
+            break;
         }
     }
-    return false;
+}
+
+function partialTraining(combination, input, result) {
+    let table = [];
+
+    var totalError = 1;
+    let numberOfVariables = Math.log2(input.t.length);
+    let weightVector = generateZeroWeightVector(numberOfVariables + 1);
+
+    for(let era = 0; totalError != 0; era++) {
+        if (era == 100) break; // если цикл бесконечный
+
+        let netVector = calculateNet(weightVector);
+        let yVector = calculateY(netVector, input.fa);
+        let errorVector = calculateError(input.t, yVector);
+
+        totalError = 0;
+        errorVector.forEach((elem) => { totalError += elem * elem; });
+
+        table.push({
+            k : era,
+            w : weightVector.slice(),
+            y : yVector.slice(),
+            E : totalError,
+        });
+
+        if (totalError != 0) {
+            let res = correctWeightOnSet(weightVector, combination, input);
+            weightVector = res.w;
+            result.sets = res.xs.slice();
+        } else {
+            result.found = true;
+            result.table = table;
+            return;
+        }
+    }
+}
+
+function correctWeightOnSet(w, combination, input) {
+    let xVectors = generateXs(w.length);
+    let xs = [];
+    
+    combination.forEach((index) => {
+        let x = [];
+        let net = 0;
+        for (let j = 0; j < w.length; j++) {
+            net += xVectors[j][index] * w[j];
+            x.push(xVectors[j][index]);
+        };
+        xs.push(x.slice());
+        
+        let delta = input.t[index] - f(input.fa, net);
+
+        for (let j = 0; j < w.length; j++) {
+            w[j] += xVectors[j][index] * delta * input.n * df(input.fa, net);
+        };
+    });
+
+    return { w, xs };
 }

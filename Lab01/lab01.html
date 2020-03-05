@@ -11,6 +11,8 @@
         <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
         <script src="http://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
         <script src="functions.js"></script>
+        <script src="utils.js"></script>
+        <script src="views.js.js"></script>
         </head>
     <body>
         <center>
@@ -53,16 +55,29 @@
                         <label class="row__name">Функция активации</label>
                     </div>
                 </p>
-                <p>
-                    <input type="radio" name="activation-function" value="1" checked>1<br>
-                    <input type="radio" name="activation-function" value="2">2<br>
-                    <input type="radio" name="activation-function" value="3">3<br>
-                    <input type="radio" name="activation-function" value="4">4
-                </p>
+                <div class="function">
+                    <div class="function">
+                        <input type="radio" name="activation-function" value="1" checked>
+                        <img src="images/1.png">
+                    </div><br>
+                    <div class="function">
+                        <input type="radio" name="activation-function" value="2">
+                        <img src="images/2.png">
+                    </div><br>
+                    <div class="function">
+                        <input type="radio" name="activation-function" value="3">
+                        <img src="images/3.png">
+                    </div><br>
+                    <div class="function">
+                        <input type="radio" name="activation-function" value="4">
+                        <img src="images/4.png">
+                    </div><br>
+                </div>
                 <input type="submit" value="Начать обучение">
             </fieldset>
         </form>
         <div class="wrapper"></div>
+        <div class="partial-training"></div>
     </body>
     <script defer src="main.js"></script>
     

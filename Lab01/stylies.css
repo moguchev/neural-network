@@ -1,7 +1,8 @@
 .row {
     display: flex;
-    flex-direction: row;
+    flex-flow: row wrap;
 }
+
 .row__name {
     width: 150px;
 }
@@ -12,17 +13,22 @@
     justify-content: center;
     margin-right: 5px;
 }
+
 .function {
     display: flex;
-    flex-direction: row;
+    flex-flow: row wrap;
+    align-items: center;
 }
+
 .index {
     font-size: 12px;
     text-align: center;
 }
+
 .ml10 {
     margin-left: 10px;
 }
+
 .wrapper {
     display: flex;
     flex-flow: column;
