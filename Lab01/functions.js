@@ -62,12 +62,12 @@ function dfa1(net) {
 }
 
 /**
- * Логистическая  функция активации
+ * Логистическая модульная функция активации
  * @param {Number} net вектор сетового входа
  * @returns {Number} значение ФА(net)
  */
 function fa2(net) {
-    let out = 0.5 * (net / (1 + Math.abs(net))+1);
+    let out = 0.5 * (1 + (net / (1 + Math.abs(net))));
     if (out >= 0.5){
         return 1;
     }
@@ -80,7 +80,7 @@ function fa2(net) {
  * @returns {Number} значение производной ФА(net)
  */
 function dfa2(net) {
-    return (0.5 * (Math.abs(net) - net + 1) / Math.pow(Math.abs(net)+1, 2));
+    return 0.5 / Math.pow(Math.abs(net) + 1, 2);
 }
 
 /**

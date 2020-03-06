@@ -285,15 +285,14 @@ function findMinimalXsAmount(booleanFunc, lerningRate, activationFunc) {
 
     for (let i = 1; i < booleanFunc.length; i++) {
         let combinations = getAllCombinations(booleanFunc.length, i);
+
         for (let j = 0; j < combinations.length; j++) {
             partialTraining(combinations[j], input, result);
             if (result.found) {  
                 break;
             }
-            console.log("Not FOUND:(")
         }
         if (result.found) {
-            console.log("FOUND!")
             console.log(result.table);
             console.log(result.sets);
             printResults(result);
@@ -315,20 +314,19 @@ function partialTraining(combination, input, result) {
         let netVector = calculateNet(weightVector);
         let yVector = calculateY(netVector, input.fa);
         let errorVector = calculateError(input.t, yVector);
-
         totalError = 0;
         errorVector.forEach((elem) => { totalError += elem * elem; });
-
+        
         table.push({
             k : era,
             w : weightVector.slice(),
             y : yVector.slice(),
             E : totalError,
         });
-
+        
         if (totalError != 0) {
             let res = correctWeightOnSet(weightVector, combination, input);
-            weightVector = res.w;
+            weightVector = res.w.slice();
             result.sets = res.xs.slice();
         } else {
             result.found = true;
@@ -359,4 +357,10 @@ function correctWeightOnSet(w, combination, input) {
     });
 
     return { w, xs };
+}
+
+function checkWeigts(w, fa) {
+    let net = calculateNet(w);
+    let y = calculateY(net, fa);
+    return y;
 }
