@@ -1,5 +1,5 @@
 // ____main____
-const RANK = 4;
+var RANK = 3;
 const form = document.querySelector('.user-form');
 
 if (form) {
@@ -46,6 +46,8 @@ function getValues() {
     // получаем тип функции активации
     ACTIVATION_FUNCTION = Number(document.querySelector('[name="activation-function"]:checked').value);
     console.log(ACTIVATION_FUNCTION);
+    RANK = Number(document.querySelector('[name="rank"]').value);
+    console.log(RANK)
 
     return { FUNCTION, LEARNING_RATE, ACTIVATION_FUNCTION };
 }
