@@ -1,4 +1,5 @@
 // ____main____
+const RANK = 4;
 const form = document.querySelector('.user-form');
 
 if (form) {
@@ -70,9 +71,9 @@ function initTable(to) {
 
 function appendToTable(k,w,y,E) {
     let table = document.querySelector('table');
-
     let tableRow = document.createElement('tr');
-    w.forEach((el, i)=>{ w[i] = (+el.toFixed(3)); });
+
+    w.forEach((el, i)=>{ w[i] = (+el.toFixed(RANK)); });
     tableRow.innerHTML = `<td><center>${k}</center></td><td><center>(${w})</center></td><td><center>(${y})</center></td><td><center>${E}</center></td>`;
 
     table.appendChild(tableRow);
@@ -103,7 +104,7 @@ function printResults(result) {
 
     result.table.forEach(row => {
         let tableRow = document.createElement('tr');
-        row.w.forEach((el, i)=>{ row.w[i] = (+el.toFixed(3)); });
+        row.w.forEach((el, i)=>{ row.w[i] = (+el.toFixed(RANK)); });
         tableRow.innerHTML = `<td><center>${row.k}</center></td><td><center>(${row.w})</center></td><td><center>(${row.y})</center></td><td><center>${row.E}</center></td>`;
     
         table.appendChild(tableRow);
@@ -139,10 +140,8 @@ function startLearning(booleanFunc, lerningRate, activationFunc) {
         let netVector = calculateNet(weightVector);
         let yVector = calculateY(netVector, activationFunc);
         let errorVector = calculateError(booleanFunc, yVector);
-
-        totalError = 0;
-        errorVector.forEach((elem) => { totalError += elem*elem;});
-
+        totalError = calculateTotalError(errorVector);
+     
         appendToTable(era, weightVector, yVector, totalError);
         map.push({k: era, E: totalError});
 
@@ -234,6 +233,16 @@ function calculateY(netVector, activationFunc) {
     return yVector;
 }
 
+/**
+ * Вычисление квадратичного отклонения
+ * @param {Array} error вектор ошибок
+ * @returns {Number}
+ */
+function calculateTotalError(error) {
+    total = 0;
+    error.forEach((elem) => { total += elem * elem; });
+    return total;
+}
 
 /**
  * Генерация векторов переменных Х (Х0-еденичный)
@@ -314,8 +323,7 @@ function partialTraining(combination, input, result) {
         let netVector = calculateNet(weightVector);
         let yVector = calculateY(netVector, input.fa);
         let errorVector = calculateError(input.t, yVector);
-        totalError = 0;
-        errorVector.forEach((elem) => { totalError += elem * elem; });
+        totalError = calculateTotalError(errorVector);
         
         table.push({
             k : era,
