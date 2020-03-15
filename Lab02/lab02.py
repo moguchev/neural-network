@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from abc import ABCMeta, abstractmethod
 
 from prettytable import PrettyTable
-from itertools import zip_longest
- 
+
+
 def line_plot(x_data, y_data, x_value, y_value, x_label="", y_label="", title=""):
     '''
     Функция для построения графика
@@ -81,8 +81,9 @@ class Neuron:
  
     # Корректировка весов согласно правилу Видроу-Хоффа (дельта-правило)
     def correct_weigts(self, learning_rate: float, local_error: float, inputs: list):
-        assert learning_rate > 0 & learning_rate <= 1
+        assert learning_rate > 0. and learning_rate <= 1.
         # Wi = Wi + n * d * Xi
+        print(self.weights)
         self.weights += np.append([self.bias], inputs) * (learning_rate * local_error)
 
 
@@ -93,8 +94,8 @@ def generate_time_points(a :float, b :float, count :int):
 
 # Прогнозируемая временная функция
 def function(t :float):
-    return 0.5 * np.sin(0.5 * t) - 0.5
-
+    # return 0.5 * np.sin(0.5 * t) - 0.5
+    return 0.4 * np.sin(0.3 * t) + 0.5
 
 def neuron_training(neuron: Neuron, learning_set: list, era_count: int, learning_rate: float):
     window_size = len(neuron.weights) - 1
@@ -120,8 +121,8 @@ if __name__ == "__main__":
     a = -2            # левая граница обучающего интервала t
     b = 4             # правая граница обучающего интервала t
     c = 2 * b - a     # правая граница прогнозируемого интервала t
-    window_size = 6   # размер окна
-    learning_rate = 1 # норма обучения
+    window_size = 5   # размер окна
+    learning_rate = 0.685 # норма обучения
     N = 20
 
     # точки на интервале [a,c]
@@ -135,7 +136,7 @@ if __name__ == "__main__":
     learning_values = [function(t) for t in learning_points]
 
     neuron = Neuron(window_size, AsIs())
-    neuron_training(neuron, learning_values, 4000, learning_rate)
+    neuron_training(neuron, learning_values, 7000, learning_rate)
 
     # точки на интервале (b, c]
     predicted_points = points[N:]
@@ -143,4 +144,4 @@ if __name__ == "__main__":
     last_values = learning_values[N-window_size:]
     predicted_values = get_forecast(neuron, last_values, predicted_points)
     
-    line_plot(points, real_values, predicted_points, predicted_values, 'x', 'X(t)', 'График [a, 2b - a]')
+    line_plot(points, real_values, predicted_points, predicted_values, 'x', 'X(t)', 'Размер окна: {window_size}\n норма обучения: {learning_rate}')
