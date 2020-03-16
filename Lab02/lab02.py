@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 from abc import ABCMeta, abstractmethod
 from prettytable import PrettyTable
 
@@ -25,7 +26,6 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
         print()
 
 
-
 def line_plot(x_data, y_data, x_value, y_value, x_label="", y_label="", title=""):
     '''
     Функция для построения графика
@@ -47,7 +47,6 @@ def line_plot(x_data, y_data, x_value, y_value, x_label="", y_label="", title=""
     plt.grid()
     plt.show()
 
-
 # Абстрактный класс функции
 class Func():
     __metaclass__ = ABCMeta
@@ -64,7 +63,6 @@ class Func():
     def get_id(self):
         """ИД  функции"""
  
-
 # Линейная функуия активации f(net) = net
 class AsIs(Func):
  
@@ -136,7 +134,7 @@ def compute_total_standard_error(real: list, received: list):
     assert len(real) == len(received)
 
     error_vector = (np.array(real) - np.array(received)) ** 2
-    return error_vector.sum()
+    return np.sqrt(error_vector.sum())
 
 def research(points: list, real_values: list, N: int):
     ptb = PrettyTable()
