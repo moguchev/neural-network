@@ -150,11 +150,11 @@ def research(points: list, real_values: list, N: int):
             lr = 0.05
             while lr < 1.05:
                 neuron = Neuron(ws, AsIs())
-                neuron_training(neuron, real_values[:N], M, lr)
+                neuron_training(neuron, real_values[:N], M, round(lr, 2))
                 predicted_values = get_forecast(neuron, real_values[N-ws:N], points[N:])
                 E = compute_total_standard_error(real_values[N:], predicted_values)
                 
-                ptb.add_row([M, ws, round(lr,2), E])
+                ptb.add_row([M, ws, round(lr, 2), E])
 
                 lr += 0.05; i += 1
                 print_progress_bar(i, k, prefix='Research:', suffix='Complete', length=50)
