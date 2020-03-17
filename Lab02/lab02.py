@@ -1,11 +1,11 @@
+#!/usr/bin/env python
 import numpy as np
 import matplotlib.pyplot as plt
-
-
 from abc import ABCMeta, abstractmethod
 from prettytable import PrettyTable
 
-def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+
+def print_progress_bar(iteration: int, total: int, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -110,6 +110,7 @@ def function(t :float):
     # return 0.5 * np.sin(0.5 * t) - 0.5
     return 0.4 * np.sin(0.3 * t) + 0.5
 
+
 def neuron_training(neuron: Neuron, learning_set: list, era_count: int, learning_rate: float):
     window_size = len(neuron.weights) - 1
     for _ in range(era_count):
@@ -141,27 +142,25 @@ def research(points: list, real_values: list, N: int):
     ptb.field_names = ['Количество эпох','Размер окна','Норма обучения', 'Суммарная ошибка']
 
     i = 0
-    print_progress_bar(i, 19*20*6, prefix='Research:', suffix='Complete', length=50)
-    for M in range(20000, 1000, -1000):
+    k = 10*7*20
+    print_progress_bar(i, k, prefix='Research:', suffix='Complete', length=50)
+    for M in range(20000, 0, -2000):
+        print(M)
         for ws in range(2, 9, 1):
             lr = 0.05
-            while lr <= 1:
+            while lr < 1.05:
                 neuron = Neuron(ws, AsIs())
                 neuron_training(neuron, real_values[:N], M, lr)
                 predicted_values = get_forecast(neuron, real_values[N-ws:N], points[N:])
                 E = compute_total_standard_error(real_values[N:], predicted_values)
                 
-                ptb.add_row([M, ws, lr, round(E,4)])
+                ptb.add_row([M, ws, round(lr,2), E])
 
-                lr += 0.05
-                i += 1
-                print_progress_bar(i, 19*20*6, prefix='Research:', suffix='Complete', length=50)
-    print_progress_bar(i, 19*20*6, prefix='Research:', suffix='Complete', length=50)
-
-    print(ptb)
-
-
-
+                lr += 0.05; i += 1
+                print_progress_bar(i, k, prefix='Research:', suffix='Complete', length=50)
+    
+    print_progress_bar(i, k, prefix='Research:', suffix='Complete', length=50)
+    return ptb
 
 if __name__ == "__main__":
     a = -4              # левая граница обучающего интервала t
@@ -191,11 +190,14 @@ if __name__ == "__main__":
     last_values = learning_values[N-window_size:]
     # прогнозируемые значения
     predicted_values = get_forecast(neuron, last_values, predicted_points)
-
+    # Суммарная среднеквадратичная ошибка прогноза
     E = compute_total_standard_error(real_values[N:], predicted_values)
 
-    title = 'Размер окна: ' + str(window_size) + ' Норма обучения: ' + str(learning_rate)
-    title += '\nКоличество эпох: ' + str(number_of_eras) + ' Среднеквадратичная ошибка: ' + str(round(E, 4))
+    title = f"Размер окна: {window_size} Норма обучения: {learning_rate}\nКоличество эпох: {number_of_eras} Среднеквадратичная ошибка: {round(E, 4)}"
     line_plot(points, real_values, predicted_points, predicted_values, 'x', 'X(t)', title)
-
-    research(points, real_values, N)
+    # исследование значений ошибок от количества эпох, размера окна, нормы обученя
+    tb = research(points, real_values, N)
+    # запись в файл
+    with open('res.txt', 'w') as f:
+        f.write(tb.get_string())
+    print(tb)
