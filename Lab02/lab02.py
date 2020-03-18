@@ -106,7 +106,6 @@ def generate_time_points(a :float, b :float, count :int):
 
 # Прогнозируемая временная функция
 def function(t :float):
-    # return t ** 4 - 2 * (t ** 3) + t
     # return 0.5 * np.sin(0.5 * t) - 0.5
     return 0.4 * np.sin(0.3 * t) + 0.5
 
@@ -145,7 +144,6 @@ def research(points: list, real_values: list, N: int):
     k = 10*7*20
     print_progress_bar(i, k, prefix='Research:', suffix='Complete', length=50)
     for M in range(20000, 0, -2000):
-        print(M)
         for ws in range(2, 9, 1):
             lr = 0.05
             while lr < 1.05:
@@ -192,6 +190,8 @@ if __name__ == "__main__":
     predicted_values = get_forecast(neuron, last_values, predicted_points)
     # Суммарная среднеквадратичная ошибка прогноза
     E = compute_total_standard_error(real_values[N:], predicted_values)
+    # вектор весов
+    print(neuron.weights)
 
     title = f"Размер окна: {window_size} Норма обучения: {learning_rate}\nКоличество эпох: {number_of_eras} Среднеквадратичная ошибка: {round(E, 4)}"
     line_plot(points, real_values, predicted_points, predicted_values, 'x', 'X(t)', title)
