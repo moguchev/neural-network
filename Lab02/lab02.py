@@ -52,11 +52,11 @@ class Func():
     __metaclass__ = ABCMeta
  
     @abstractmethod
-    def compute(self,income):
+    def compute(self, income: float):
         """Значение функции активации"""
     
     @abstractmethod
-    def derivative(self, income):
+    def derivative(self, income: float):
         """Производная функции"""    
 
     @abstractmethod
@@ -66,10 +66,10 @@ class Func():
 # Линейная функуия активации f(net) = net
 class AsIs(Func):
  
-    def compute(self, income):
+    def compute(self, income: float):
         return income
  
-    def derivative(self, income):
+    def derivative(self, income: float):
         return 1
 
     def get_id(self):
@@ -84,7 +84,7 @@ class Neuron:
         self.weights = np.random.rand(count + 1)
         self.f = function # функция активации
         self.bias = bias  # смещение
-        self.output = 0   # выход нейрона
+        self.output = 0.   # выход нейрона
 
     # Рассчитать нейрон
     def compute(self, inputs :list):
