@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 from abc import ABCMeta, abstractmethod
 from prettytable import PrettyTable
+from itertools import combinations
 
 X_VECTORS = [
     [0,0,0,0],
@@ -22,7 +22,16 @@ X_VECTORS = [
     [1,1,0,1],
     [1,1,1,0],
     [1,1,1,1]
-    ]
+]
+
+def line_plot(x_data, y_data, x_label="", y_label="", title=""):
+    _, ax = plt.subplots()
+    ax.plot(x_data, y_data, lw=2, marker='o', color='#539caf', alpha=0.8)
+    ax.set_title(title)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    plt.grid()
+    plt.show()
 
 # Абстрактный класс функции
 class Func():
@@ -62,7 +71,7 @@ class Gauss(Func):
 
     def compute(self, income: list, center: list):
         error_vector = (np.array(income) - np.array(center)) ** 2
-        return math.exp(-error_vector.sum())
+        return np.exp(-error_vector.sum())
  
     def derivative(self, income: float):
         return 1.
@@ -106,7 +115,7 @@ class Neuron:
     def get_weigts(self):
         return self.weights
 
-# Класс нейрона
+# Класс RBF нейрона
 class RBFNeuron(Neuron):
     def __init__(self, function: Func, center: list):
         Neuron.__init__(self, -1, function, 0)
@@ -131,11 +140,14 @@ class RBFNeuron(Neuron):
     def get_weigts(self):
         return self.weights[1:]
 
-
-def boolean_function(x: list):
-    assert len(x) == 4
-
-    return (not (x[0] and x[1])) and x[2] and x[3]  # из методы
+# Класс слой RBF нейронов
+class RBFLayer:
+    def __init__(self, centers: list):
+        self.size = len(centers)
+        self.__neurons = [ RBFNeuron(Gauss(), center) for center in centers]
+        
+    def compute_out(self, inputs: list):
+        return [ neuron.compute_out(inputs) for neuron in self.__neurons]
 
 def get_J():
     J0 = []; J1 = []
@@ -146,26 +158,15 @@ def get_J():
     if len(J0) > len(J1): return J1
     else: return J0
 
-class RBFLayer:
-    def __init__(self, centers: list):
-        self.size = len(centers)
-        self.__neurons = [ RBFNeuron(Gauss(), center) for center in centers]
-        print(self.__neurons)
-        
-    def compute_out(self, inputs: list):
-        return [ neuron.compute_out(inputs) for neuron in self.__neurons]
-
-
 def compute_real_function(sets: list):
-    return [boolean_function(X) for X in sets]
+    return [int(boolean_function(X)) for X in sets]
 
 def compute_image_function(sets: list, n: Neuron, rbf: RBFLayer):
-    return [n.compute_out(rbf.compute_out(X)) for X in sets]
+    return [int(n.compute_out(rbf.compute_out(X))) for X in sets]
 
 def compute_total_error(real: list, image: list):
     assert len(real) == len(image)
-    return ((np.array(real) - np.array(image)) ** 2).sum()
-
+    return int(((np.array(real) - np.array(image)) ** 2).sum())
 
 def learn_on_sets(sets: list, learning_rate: float, n: Neuron, rbf: RBFLayer):
     for X in sets:
@@ -179,29 +180,43 @@ def learn_on_sets(sets: list, learning_rate: float, n: Neuron, rbf: RBFLayer):
 def learning(sets: list, learning_rate: float):
     rbf_layer = RBFLayer(get_J())
     neuron = Neuron(rbf_layer.size, Threshold())
-    table = PrettyTable(['Эпоха', 'Синаптические веса', \
-        'Выходная функция', 'Суммарная ошибка'])
+    table = PrettyTable(['K', 'W', 'Y', 'E'])
+    real = compute_real_function(X_VECTORS)
 
     total_error = 1; era = 0
+    errors = []
     while total_error != 0:
-        if era > 100: table.clear(); break
+        if era > 100: break
 
-        real = compute_real_function(sets)
-        image = compute_image_function(sets, neuron, rbf_layer)
+        image = compute_image_function(X_VECTORS, neuron, rbf_layer)
         total_error = compute_total_error(real, image)
+        weights = np.copy(neuron.weights)
 
-        table.add_row([era, neuron.weights, image, total_error])
+        table.add_row([era, weights, image, total_error])
+        errors.append(total_error)
 
         if total_error != 0:
             learn_on_sets(sets, learning_rate, neuron, rbf_layer)
         
         era += 1
-    return table
 
+    is_trained = total_error == 0
+    return is_trained, table, errors
+
+def find_min_sets(learning_rate: float):
+    for number_of_sets in range(2, len(X_VECTORS)):
+        for sets in combinations(X_VECTORS, number_of_sets):
+            is_trained, results, vec_errors = learning(sets, learning_rate)
+            if is_trained:
+                return results, vec_errors
+
+def boolean_function(x: list):
+    assert len(x) == 4
+
+    return (not (x[0] and x[1])) and x[2] and x[3]  # из методы
 
 if __name__ == "__main__":
-   results = learning([[0,0,0,1],[0,1,1,1],[1,0,1,0],[1,0,1,1],[1,1,1,0]],0.3)
-   print(results)
-    # print(r)
-    # print(n1.compute([r]))
-
+    results, E = find_min_sets(float(input('Введите норму обучения: ')))
+    print('Центры RBF:', get_J())  
+    print(results)
+    line_plot([i for i in range(len(E))], E, "Ошибка E", "Эра k", "E(k)")
