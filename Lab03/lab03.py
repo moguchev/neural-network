@@ -66,6 +66,26 @@ class Threshold(Func):
 assert issubclass(Threshold, Func)
 assert isinstance(Threshold(), Func)
 
+# Логистическая модульная функция активации
+class Modal(Func):
+
+    def compute(self, income: float):
+        out = 0.5 * (1 + (income / (1 + abs(income))))
+        if out >= 0.5:
+            return 1.
+        return 0.
+
+ 
+    def derivative(self, income: float):
+        return 0.5 / ((1 + abs(income)) ** 2)
+
+    def get_id(self):
+        return 3    
+    
+assert issubclass(Threshold, Func)
+assert isinstance(Threshold(), Func)
+
+
 # Пороговая функуия активации
 class Gauss(Func):
 
@@ -177,9 +197,9 @@ def learn_on_sets(sets: list, learning_rate: float, n: Neuron, rbf: RBFLayer):
         if error != 0:
             n.correct_weigts(learning_rate, error, rbf_out)
 
-def learning(sets: list, learning_rate: float):
+def learning(sets: list, learning_rate: float, function: Func):
     rbf_layer = RBFLayer(get_J())
-    neuron = Neuron(rbf_layer.size, Threshold())
+    neuron = Neuron(rbf_layer.size, function)
     table = PrettyTable(['K', 'W', 'Y', 'E'])
     real = compute_real_function(X_VECTORS)
 
@@ -203,20 +223,25 @@ def learning(sets: list, learning_rate: float):
     is_trained = total_error == 0
     return is_trained, table, errors
 
-def find_min_sets(learning_rate: float):
+def find_min_sets(learning_rate: float, function: Func):
     for number_of_sets in range(2, len(X_VECTORS)):
         for sets in combinations(X_VECTORS, number_of_sets):
-            is_trained, results, vec_errors = learning(sets, learning_rate)
+            is_trained, table, vec_errors = learning(sets, learning_rate, function)
             if is_trained:
-                return results, vec_errors
+                return table, sets, vec_errors
 
 def boolean_function(x: list):
     assert len(x) == 4
-
-    return (not (x[0] and x[1])) and x[2] and x[3]  # из методы
+    return (not (x[0] or x[1])) or x[2] or x[3]  # 7 вариант
+    #return (not (x[0] and x[1])) and x[2] and x[3]  # из методы
 
 if __name__ == "__main__":
-    results, E = find_min_sets(float(input('Введите норму обучения: ')))
-    print('Центры RBF:', get_J())  
+    n = float(input('Введите норму обучения: '))
+    results, sets, E = find_min_sets(n, Threshold())
+    # results, sets, E = find_min_sets(n, Modal())
+    
+    print('Центры RBF:', get_J())
+    print('Минимальный набор: ', sets)
     print(results)
+
     line_plot([i for i in range(len(E))], E, "Ошибка E", "Эра k", "E(k)")
