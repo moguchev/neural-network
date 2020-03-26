@@ -244,4 +244,4 @@ if __name__ == "__main__":
     print('Минимальный набор: ', sets)
     print(results)
 
-    line_plot([i for i in range(len(E))], E, "Ошибка E", "Эра k", "E(k)")
+    line_plot([i for i in range(len(E))], E, "Эра k","Ошибка E", "E(k)")
