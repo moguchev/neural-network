@@ -53,9 +53,7 @@ class Func():
 class Threshold(Func):
 
     def compute(self, income: float):
-        if income >= 0:
-            return 1.
-        return 0.
+        return 1. if income >= 0 else 0.
  
     def derivative(self, income: float):
         return 1.
@@ -71,11 +69,8 @@ class Modal(Func):
 
     def compute(self, income: float):
         out = 0.5 * (1 + (income / (1 + abs(income))))
-        if out >= 0.5:
-            return 1.
-        return 0.
-
- 
+        return 1. if out >= 0.5 else 0.
+            
     def derivative(self, income: float):
         return 0.5 / ((1 + abs(income)) ** 2)
 
