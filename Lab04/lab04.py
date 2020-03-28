@@ -52,8 +52,8 @@ assert isinstance(ActivationFunc(), Func)
 # Класс нейрона
 class Neuron:
     def __init__(self, count: int, function: Func, bias=1.):
-        self.weights = np.random.rand(count + 1)
-        # self.weights = np.zeros(count + 1)
+        # self.weights = np.random.rand(count + 1) - 0.5
+        self.weights = np.zeros(count + 1)
         self.f = function # функция активации
         self.bias = bias  # смещение
         self.output = 0.  # выход нейрона
@@ -98,9 +98,10 @@ class Layer:
         assert len(local_errors) == len(self.__neurons__)
 
         for i in range(len(self.__neurons__)):
-            print("W",i,": ",self.__neurons__[i].weights, end="->")
             self.__neurons__[i].correct_weigts(learning_rate, local_errors[i], inputs)
-            print("W",i,": ",self.__neurons__[i].weights)
+    
+    def get_weights(self):
+        return [ list(neuron.weights) for neuron in self.__neurons__]
 
 class HiddenLayer(Layer):
     def __init__(self, size: int, num_of_weigts: int, function: Func):
@@ -134,29 +135,25 @@ def back_propogation_learning(N: int, J: int, M: int, X: list, T: list, learning
     hidden_layer = HiddenLayer(J, N, ActivationFunc())
     output_layer = OutputLayer(M, J, ActivationFunc())
 
-    table = PrettyTable(['Номер эпохи', 'Выходной вектор', 'Сумарная ошибка'])
+    table = PrettyTable(['Номер эпохи', 'Скрытый слой','Входной слой', 'Выходной вектор', 'Сумарная ошибка'])
     total_errors = []
     total_error = 1.
     era = 0
     while total_error > E:
-        if era >100: break
+        if era >1000: break
 
         out1 = hidden_layer.compute_out(X)
         out2 = output_layer.compute_out(out1)
         total_error = compute_total_error(T, out2)
 
         total_errors.append(total_error)
-        table.add_row([era, out2, total_error])
+        table.add_row([era, hidden_layer.get_weights(), output_layer.get_weights(), out2, total_error])
         print(era, out2, total_error)
-
-
 
         if total_error > 0.001:
             e2 = np.array(T) - np.array(out2)
             e1 = output_layer.compute_back_error(out1, T)
-            print("M:")
             output_layer.correct_weigts(learning_rate, out1, e2)
-            print("J:")
             hidden_layer.correct_weigts(learning_rate, X, e1)
         
         era += 1
@@ -177,9 +174,9 @@ if __name__ == '__main__':
     J = 2
     M = 1
     X = [4.]
-    T = [-2.]
-    n = 0.9
-    accuracy = 0.01
+    T = [-0.2]
+    n = 0.5
+    accuracy = 0.001
 
     results, errors = back_propogation_learning(N,J,M,X,T,n, accuracy)
     print(results)
