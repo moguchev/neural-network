@@ -29,6 +29,9 @@ def remember(event):
         if image2[i] == 0: image2[i] = -1
         if image3[i] == 0: image3[i] = -1
 
+    print("X1: ", image1)
+    print("X2: ", image2)
+    print("X3: ", image3)
     network.remember(image1, image2, image3)
 
 
@@ -49,10 +52,17 @@ def result(event):
         if input2[i] == 0: input2[i] = -1
         if input3[i] == 0: input3[i] = -1
 
+    print("~X1: ", input1)
+    print("~X2: ", input2)
+    print("~X3: ", input3)
     # Распознавание
     output1 = network.recognize(input1)
     output2 = network.recognize(input2)
     output3 = network.recognize(input3)
+
+    print("f(~X1*W): ", output1)
+    print("f(~X2*W): ", output2)
+    print("f(~X3*W): ", output3)
 
     # Помещаем полученные вектора в таблицу для отображения
     for i in range(len_vector):
