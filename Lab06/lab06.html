@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Лабораторная работа №6</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="./css/stylies.css">
+    </head>
+    <body>
+        <center>
+            <b><p>Лабораторная работа №6</p>
+            <p>Алгоритм кластерного анализа данных</p></b>
+        </center>
+        <div class="main">
+            <canvas id="field" width="800" height="500"></canvas>
+            <div class="menu">
+                <form id="enter-points">
+                    <fieldset>
+                        <legend>Задание начальных точек</legend>
+                        <div class="row">
+                            <label for="x">x</label>
+                            <input id="x" type="number" min="0" max="800" placeholder="800">
+                            <label for="y">y</label>
+                            <input id="y" type="number" min="0" max="500" placeholder="500">
+                        </div>
+                        <button id="add-points">Добавить точку</button>
+                    </fieldset>
+                </form>
+                <form id="enter-centers">
+                    <fieldset>
+                        <legend>Задание начальных центров кластеров</legend>
+                        <div class="row">
+                            <label for="x">x</label>
+                            <input id="xc" type="number" min="0" max="800" placeholder="800">
+                            <label for="y">y</label>
+                            <input id="yc" type="number" min="0" max="500" placeholder="500">
+                        </div>
+                        <button id="add-centers">Добавить центр</button>
+                    </fieldset>
+                </form>
+                <form id="main-form">
+                    <fieldset>
+                        <legend>Выбор метрики</legend>
+                        <p><input type="radio" name="distance" value="1" checked>Евклида</p>
+                        <p><input type="radio" name="distance" value="2">Чебышева</p>
+                        <input type="submit" value="Начать кластеризацию">
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </body>
+    <script defer src="./js/main.js"></script>
+</html>
