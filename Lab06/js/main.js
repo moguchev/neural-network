@@ -13,7 +13,7 @@ main.addEventListener('submit', this.onBegin.bind(this), false);
 const points = document.getElementById('points')
 initScreenTable(points, 'points-screen', 'Исходные точки');
 const centers = document.getElementById('centers')
-initScreenTable(centers, 'centers-screen', 'Центры кластеров');
+initScreenTable(centers, 'centers-screen', 'Исходные центры кластеров');
 
 // массив точек
 var POINTS = [];
