@@ -19,9 +19,9 @@
                         <legend>Задание начальных точек</legend>
                         <div class="row">
                             <label for="x">x</label>
-                            <input id="x" type="number" min="0" max="800" placeholder="800">
+                            <input id="x" type="number" min="0" max="800" placeholder="800" required>
                             <label for="y">y</label>
-                            <input id="y" type="number" min="0" max="500" placeholder="500">
+                            <input id="y" type="number" min="0" max="500" placeholder="500" required>
                         </div>
                         <button id="add-point">Добавить точку</button>
                     </fieldset>
@@ -31,9 +31,9 @@
                         <legend>Задание начальных центров кластеров</legend>
                         <div class="row">
                             <label for="x">x</label>
-                            <input id="xc" type="number" min="0" max="800" placeholder="800">
+                            <input id="xc" type="number" min="0" max="800" placeholder="800" required>
                             <label for="y">y</label>
-                            <input id="yc" type="number" min="0" max="500" placeholder="500">
+                            <input id="yc" type="number" min="0" max="500" placeholder="500" required>
                         </div>
                         <button id="add-center">Добавить центр</button>
                     </fieldset>
@@ -46,6 +46,13 @@
                         <input type="submit" value="Начать кластеризацию">
                     </fieldset>
                 </form>
+                <form>
+                    <center><p><input type="submit" value="Сбросить"></p></center>
+                </form>
+                <div class="menu-screen">
+                    <div id="centers" class="scroll"></div>
+                    <div id="points" class="scroll"></div>
+                </div>
             </div>
         </div>
     </body>

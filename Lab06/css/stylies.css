@@ -25,9 +25,26 @@ input[type='number'] {
     margin-left: 5px;
     border: 1px solid black;
     width: 100%;
+    min-height: 500px;
 }
 
 .row {
     display: block;
     margin-bottom: 5px;
+}
+
+.scroll {
+    width: 100%;
+    height: 100%;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    display: flex;
+    justify-content: center;
+}
+
+.menu-screen {
+    display: flex;
+    flex-flow: row nowrap;
+    height: 100%;
+    justify-items: center;
 }
