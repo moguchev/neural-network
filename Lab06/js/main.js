@@ -20,8 +20,32 @@ var POINTS = [];
 // массив центров
 var CENTERS = [];
 // массив цветов
-const COLORS = ['fuchsia',  'red', 'yellow', 'lime', 'green', 'aqua', 'blue', 'navy', 'purple', 'black', 'silver'];
-
+const COLORS = [
+    'fuchsia',
+    'red', 
+    'yellow', 
+    'lime',
+    'green',
+    'aqua',
+    'blue',
+    'navy',
+    'purple',
+    'black',
+    'silver'
+];
+const DARKCOLORS = [
+    'rgba(255, 0, 255, 0.15)',
+    'rgba(255, 0, 0, 0.15)',
+    'rgba(255, 255, 0, 0.15)',
+    'rgba(0, 255, 0, 0.15)',
+    'rgba(0, 128, 0, 0.15)',
+    'rgba(0, 255, 255, 0.15)',
+    'rgba(0, 0, 255, 0.15)',
+    'rgba(0, 0, 128, 0.15)',
+    'rgba(128, 0, 128, 0.15)',
+    'rgba(0, 0, 0, 0.15)',
+    'rgba(192, 192, 192, 0.15)'
+];
 /**
  * вычисление расстояния
  * @param {number} type
@@ -63,7 +87,7 @@ function getClusters(distanceType) {
         oldQ = Q;
         Q = computeSum(centers, clusters, distanceType);
     } while(Q - oldQ != 0);
-    return clusters;
+    return {cl: clusters, c: centers};
 }
 
 /**
@@ -155,7 +179,36 @@ function minIndex(array) {
 }
 
 // GUI
+function plotResults(to, clusters, centers) {
+    to.innerHTML = '';
+    let table = document.createElement('table');
+    table.innerHTML = `
+    <caption>Таблица кластеров</caption>
+    <tr>
+        <th>Кластер</th>
+        <th>Исходные центры кластеров</th>
+        <th>Полученные центры</th>
+        <th>Точки кластера</th>
+    </tr>`
+    table.setAttribute('border', '1px');
+    table.setAttribute('cellpadding', '0');
+    table.setAttribute('cellspacing', '0');
+    to.appendChild(table);
 
+    clusters.forEach((cluster, center) => {
+        let points = ''
+        cluster.forEach((point)=>{
+            points += `(${POINTS[point].x},${POINTS[point].y}) `;
+        });
+        let tableRow = document.createElement('tr');
+        tableRow.innerHTML = `
+            <td><center>${center}</center></td>
+            <td><center>(${CENTERS[center].x},${CENTERS[center].y})</center></td>
+            <td><center>(${centers[center].x},${centers[center].y})</center></td>
+            <td><center>${points}</center></td>`;
+        table.appendChild(tableRow);
+    })
+}
 /**
  * Обработчик формы добавления центра
  * @param {Event} event
@@ -167,16 +220,19 @@ function onBegin(event) {
     document.getElementById('add-center').disabled = true;
     document.getElementById('add-point').disabled = true;
     d = Number(document.querySelector('[name="distance"]:checked').value);
-    clusters = getClusters(d);
+    let result = getClusters(d);
+    let clusters = result.cl;
+    let newCenters = result.c;
     ctx.clearRect(0,0,800,500);
-
+    
     clusters.forEach((cluster, center)=>{
-        let color = COLORS[center];
-        drawСenter(ctx, CENTERS[center].x, CENTERS[center].y, color);
+        drawСenter(ctx, CENTERS[center].x, CENTERS[center].y, DARKCOLORS[center]);
+        drawСenter(ctx, newCenters[center].x, newCenters[center].y, COLORS[center]);
         cluster.forEach(point =>{
-            drawPoint(ctx, POINTS[point].x, POINTS[point].y, color);
+            drawPoint(ctx, POINTS[point].x, POINTS[point].y, COLORS[center]);
         });
     });
+    plotResults(document.getElementById('results'), clusters, newCenters);
 }
 
 /**
@@ -246,6 +302,8 @@ function drawPoint(ctx, x, y, color) {
     circle.arc(x, y, 5, 0, 2 * Math.PI);
     ctx.fillStyle = color;
     ctx.fill(circle);
+    ctx.fillStyle = "#000";
+    ctx.stroke(circle);
     circle.closePath()
 }
 
